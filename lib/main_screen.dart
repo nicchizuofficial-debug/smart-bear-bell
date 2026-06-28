@@ -1,5 +1,10 @@
-﻿import 'package:flutter/material.dart';
+﻿import 'dart:async';
+import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'audio_service.dart';
+import 'risk_service.dart';
 import 'bell_settings.dart';
 import 'motion_bell_service.dart';
 import 'emergency_mode.dart';
@@ -36,6 +41,10 @@ class _MainScreenState extends State<MainScreen>
   String? _statusMessage;
   bool _showOnboarding = true;
 
+  RiskResult? _riskResult;
+  LatLng? _userLocation;
+  Timer? _riskTimer;
+
   late AnimationController _emergencyPressCtrl;
 
   L10n get l => L10n(_lang);
@@ -55,11 +64,38 @@ class _MainScreenState extends State<MainScreen>
     _emergency.startShakeDetection();
     _geofence.load();
     _bellSettings.load();
-    _sightings.load();
+    _sightings.load().then((_) => _updateRisk());
+    _fetchLocation();
+    _riskTimer = Timer.periodic(const Duration(minutes: 1), (_) => _updateRisk());
     _emergencyPressCtrl = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 800),
     );
+  }
+
+  void _updateRisk() {
+    if (!mounted) return;
+    setState(() {
+      _riskResult = RiskService.calculate(
+        userLocation: _userLocation,
+        sightings: _sightings,
+      );
+    });
+  }
+
+  Future<void> _fetchLocation() async {
+    if (kIsWeb) return;
+    try {
+      final perm = await Geolocator.checkPermission();
+      if (perm == LocationPermission.denied) {
+        await Geolocator.requestPermission();
+      }
+      final pos = await Geolocator.getCurrentPosition()
+          .timeout(const Duration(seconds: 8));
+      if (!mounted) return;
+      _userLocation = LatLng(pos.latitude, pos.longitude);
+      _updateRisk();
+    } catch (_) {}
   }
 
   void _toggleBell(bool value) async {
@@ -316,8 +352,8 @@ class _MainScreenState extends State<MainScreen>
 
                         const SizedBox(height: 16),
 
-                        // 危険度インジケーター（静的デモ）
-                        _RiskCard(l10n: l),
+                        // 危険度インジケーター（動的スコア）
+                        _DynamicRiskCard(result: _riskResult, l10n: l),
 
                         const SizedBox(height: 16),
 
@@ -361,6 +397,7 @@ class _MainScreenState extends State<MainScreen>
     _emergency.dispose();
     _audio.dispose();
     _geofence.dispose();
+    _riskTimer?.cancel();
     _emergencyPressCtrl.dispose();
     super.dispose();
   }
@@ -495,18 +532,40 @@ class _BellCard extends StatelessWidget {
 }
 
 // ── 危険度インジケーター（デモ） ──
-class _RiskCard extends StatelessWidget {
+class _DynamicRiskCard extends StatelessWidget {
+  final RiskResult? result;
   final L10n l10n;
-  const _RiskCard({required this.l10n});
+  const _DynamicRiskCard({required this.result, required this.l10n});
+
+  Color get _levelColor => switch (result?.level) {
+        RiskLevel.high   => const Color(0xFFFF4422),
+        RiskLevel.medium => const Color(0xFFFF8800),
+        _                => const Color(0xFF44AA44),
+      };
 
   @override
   Widget build(BuildContext context) {
-    final now = DateTime.now();
-    final hour = now.hour;
-    final isHighRisk = (hour >= 4 && hour <= 7) || (hour >= 17 && hour <= 20);
-    final riskLevel = isHighRisk ? 0.72 : 0.35;
-    final riskLabel = isHighRisk ? l10n.get('riskHigh') : l10n.get('riskLow');
-    final riskColor = isHighRisk ? const Color(0xFFFF6600) : const Color(0xFF44AA44);
+    final l = l10n;
+    final r = result;
+
+    // 算出前はスケルトン表示
+    if (r == null) {
+      return Container(
+        height: 80,
+        decoration: BoxDecoration(
+          color: const Color(0xFF141414),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFF2A2A2A), width: 1.5),
+        ),
+        child: const Center(
+          child: SizedBox(width: 20, height: 20,
+              child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF444444))),
+        ),
+      );
+    }
+
+    final color = _levelColor;
+    final score = r.totalScore / 100.0;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -515,38 +574,115 @@ class _RiskCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFF2A2A2A), width: 1.5),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(Icons.shield_outlined, color: Color(0xFF888888), size: 16),
-              const SizedBox(width: 6),
-              Text(l10n.get('riskTitle'),
-                  style: const TextStyle(color: Color(0xFF888888), fontSize: 12)),
-              const Spacer(),
-              Text(riskLabel,
-                  style: TextStyle(
-                    color: riskColor, fontSize: 13, fontWeight: FontWeight.bold)),
-            ],
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        // ヘッダー行
+        Row(children: [
+          Icon(Icons.shield_outlined, color: color, size: 16),
+          const SizedBox(width: 6),
+          Text(l.get('riskTitle'),
+              style: const TextStyle(color: Color(0xFF888888), fontSize: 12)),
+          const Spacer(),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: color.withValues(alpha: 0.5)),
+            ),
+            child: Text(l.get(r.levelKey),
+                style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.bold)),
           ),
-          const SizedBox(height: 10),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(4),
+        ]),
+
+        const SizedBox(height: 10),
+
+        // スコアバー
+        LayoutBuilder(builder: (context, constraints) {
+          return Stack(children: [
+            Container(height: 8,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2A2A2A),
+                  borderRadius: BorderRadius.circular(4),
+                )),
+            Container(
+              height: 8,
+              width: constraints.maxWidth * score,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(4),
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF44AA44), Color(0xFFFF8800), Color(0xFFFF4422)],
+                ),
+              ),
+            ),
+          ]);
+        }),
+
+        const SizedBox(height: 12),
+
+        // 3要素ブレークダウン
+        ...r.factors.map((f) => _FactorRow(factor: f, l10n: l)),
+
+        const SizedBox(height: 10),
+
+        // メッセージ
+        Text(l.get(r.msgKey),
+            style: const TextStyle(color: Color(0xFF888888), fontSize: 11, height: 1.5)),
+      ]),
+    );
+  }
+}
+
+class _FactorRow extends StatelessWidget {
+  final RiskFactor factor;
+  final L10n l10n;
+  const _FactorRow({required this.factor, required this.l10n});
+
+  static const _icons = {
+    'riskFactorTime':    Icons.access_time,
+    'riskFactorSeason':  Icons.eco_outlined,
+    'riskFactorSighting': Icons.location_on_outlined,
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final l = l10n;
+    final score = factor.score < 0 ? 0.0 : factor.score / 100.0;
+    final barColor = score > 0.65
+        ? const Color(0xFFFF4422)
+        : score > 0.35
+            ? const Color(0xFFFF8800)
+            : const Color(0xFF44AA44);
+    final icon = _icons[factor.labelKey] ?? Icons.info_outline;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Row(children: [
+        Icon(icon, color: const Color(0xFF666666), size: 13),
+        const SizedBox(width: 6),
+        SizedBox(width: 72,
+            child: Text(l.get(factor.labelKey),
+                style: const TextStyle(color: Color(0xFF666666), fontSize: 11))),
+        Expanded(
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(3),
             child: LinearProgressIndicator(
-              value: riskLevel,
-              minHeight: 6,
+              value: score,
+              minHeight: 5,
               backgroundColor: const Color(0xFF2A2A2A),
-              valueColor: AlwaysStoppedAnimation<Color>(riskColor),
+              valueColor: AlwaysStoppedAnimation<Color>(barColor),
             ),
           ),
-          const SizedBox(height: 8),
-          Text(
-            isHighRisk ? l10n.get('riskHighMsg') : l10n.get('riskLowMsg'),
-            style: const TextStyle(color: Color(0xFF666666), fontSize: 11, height: 1.5),
+        ),
+        const SizedBox(width: 8),
+        SizedBox(
+          width: 100,
+          child: Text(
+            factor.score < 0 ? l.get('riskSightingUnknown') : l.get(factor.valueKey),
+            style: const TextStyle(color: Color(0xFF888888), fontSize: 10),
+            overflow: TextOverflow.ellipsis,
           ),
-        ],
-      ),
+        ),
+      ]),
     );
   }
 }

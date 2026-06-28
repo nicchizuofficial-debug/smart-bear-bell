@@ -1,0 +1,30 @@
+{
+  "version": "2026-06",
+  "sightings": [
+    {"id":"s001","lat":43.0578,"lng":141.3445,"prefecture":"北海道","city":"札幌市南区","date":"2026-06-26","source":"official","desc":"住宅地の公園付近で目撃。体長約1.2m。"},
+    {"id":"s002","lat":39.7100,"lng":140.1024,"prefecture":"秋田県","city":"秋田市","date":"2026-06-25","source":"official","desc":"河川敷の散歩道で目撃。"},
+    {"id":"s003","lat":36.6953,"lng":137.2113,"prefecture":"富山県","city":"富山市","date":"2026-06-24","source":"official","desc":"住宅街の裏山から出没。農作物への被害あり。"},
+    {"id":"s004","lat":36.6516,"lng":138.1807,"prefecture":"長野県","city":"長野市","date":"2026-06-22","source":"official","desc":"市街地の神社境内で目撃。"},
+    {"id":"s005","lat":39.6961,"lng":141.1526,"prefecture":"岩手県","city":"盛岡市","date":"2026-06-15","source":"official","desc":"住宅地近くの里山で目撃。"},
+    {"id":"s006","lat":36.5944,"lng":136.6256,"prefecture":"石川県","city":"金沢市","date":"2026-06-10","source":"official","desc":"兼六園周辺の住宅地で目撃情報。"},
+    {"id":"s007","lat":35.2329,"lng":135.1686,"prefecture":"兵庫県","city":"丹波市","date":"2026-06-05","source":"official","desc":"山間部の集落で目撃。"},
+    {"id":"s008","lat":37.4033,"lng":140.3636,"prefecture":"福島県","city":"郡山市","date":"2026-06-01","source":"official","desc":"公園内で目撃。警戒態勢。"},
+    {"id":"s009","lat":38.2688,"lng":140.8721,"prefecture":"宮城県","city":"仙台市","date":"2026-05-30","source":"official","desc":"青葉区の住宅地で複数の目撃情報。"},
+    {"id":"s010","lat":36.3418,"lng":136.5084,"prefecture":"福井県","city":"福井市","date":"2026-05-28","source":"official","desc":"住宅地の田んぼ周辺で目撃。"},
+    {"id":"s011","lat":35.3729,"lng":136.9221,"prefecture":"岐阜県","city":"岐阜市","date":"2026-05-20","source":"official","desc":"郊外の林道で目撃。"},
+    {"id":"s012","lat":43.7706,"lng":142.3650,"prefecture":"北海道","city":"旭川市","date":"2026-05-18","source":"official","desc":"市街地近くの農地で出没。"},
+    {"id":"s013","lat":36.5508,"lng":136.7281,"prefecture":"石川県","city":"白山市","date":"2026-05-15","source":"official","desc":"山麓の集落で複数回目撃。"},
+    {"id":"s014","lat":37.9161,"lng":139.0364,"prefecture":"新潟県","city":"新潟市","date":"2026-05-10","source":"official","desc":"信濃川沿いの遊歩道で目撃。"},
+    {"id":"s015","lat":38.9180,"lng":141.1126,"prefecture":"岩手県","city":"花巻市","date":"2026-05-05","source":"official","desc":"農村地帯で養蜂箱への被害。"},
+    {"id":"s016","lat":35.6762,"lng":138.5687,"prefecture":"山梨県","city":"甲府市","date":"2026-04-28","source":"official","desc":"市街地から3km圏内で目撃。"},
+    {"id":"s017","lat":36.2048,"lng":137.9679,"prefecture":"長野県","city":"松本市","date":"2026-04-20","source":"official","desc":"郊外の公園で親子グマを確認。"},
+    {"id":"s018","lat":39.4333,"lng":141.9529,"prefecture":"岩手県","city":"釜石市","date":"2026-04-15","source":"official","desc":"港町近くの山林で目撃。"},
+    {"id":"s019","lat":43.1907,"lng":140.9942,"prefecture":"北海道","city":"小樽市","date":"2026-04-10","source":"official","desc":"住宅街に出没。捕獲作戦実施。"},
+    {"id":"s020","lat":36.8147,"lng":137.7645,"prefecture":"富山県","city":"高岡市","date":"2026-04-05","source":"official","desc":"河川敷の遊歩道で目撃。"},
+    {"id":"s021","lat":35.4478,"lng":139.6425,"prefecture":"神奈川県","city":"相模原市","date":"2026-03-20","source":"official","desc":"丹沢山系から里へ出没。"},
+    {"id":"s022","lat":35.7100,"lng":138.7241,"prefecture":"東京都","city":"奥多摩町","date":"2026-03-15","source":"official","desc":"奥多摩湖周辺の登山道で目撃。"},
+    {"id":"s023","lat":44.0209,"lng":144.3624,"prefecture":"北海道","city":"北見市","date":"2026-03-10","source":"official","desc":"冬眠明けの個体を市街地で確認。"},
+    {"id":"s024","lat":37.3877,"lng":137.0019,"prefecture":"石川県","city":"輪島市","date":"2026-02-28","source":"official","desc":"能登半島の集落で目撃。"},
+    {"id":"s025","lat":40.8244,"lng":140.7400,"prefecture":"青森県","city":"青森市","date":"2026-02-20","source":"official","desc":"冬眠明け前の個体を山裾で目撃。"}
+  ]
+}

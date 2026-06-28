@@ -5,6 +5,8 @@ import 'motion_bell_service.dart';
 import 'emergency_mode.dart';
 import 'geofence_service.dart';
 import 'geofence_screen.dart';
+import 'sighting_service.dart';
+import 'sighting_screen.dart';
 import 'sos_service.dart';
 import 'l10n.dart';
 import 'settings_screen.dart';
@@ -26,6 +28,7 @@ class _MainScreenState extends State<MainScreen>
   final SosService _sos = SosService();
   final GeofenceService _geofence = GeofenceService();
   final BellSettings _bellSettings = BellSettings();
+  final SightingService _sightings = SightingService();
 
   bool _bellEnabled = false;
   bool _emergencyActive = false;
@@ -52,6 +55,7 @@ class _MainScreenState extends State<MainScreen>
     _emergency.startShakeDetection();
     _geofence.load();
     _bellSettings.load();
+    _sightings.load();
     _emergencyPressCtrl = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 800),
@@ -136,6 +140,15 @@ class _MainScreenState extends State<MainScreen>
       context,
       MaterialPageRoute(
         builder: (_) => GeofenceScreen(geofenceService: _geofence, l10n: l),
+      ),
+    );
+  }
+
+  void _openSightingMap() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => SightingScreen(service: _sightings, l10n: l),
       ),
     );
   }
@@ -239,6 +252,11 @@ class _MainScreenState extends State<MainScreen>
                       ),
                       const Spacer(),
                       IconButton(
+                        icon: const Icon(Icons.warning_amber_rounded, color: Color(0xFF666666), size: 22),
+                        onPressed: _openSightingMap,
+                        tooltip: l.get('sightingTitle'),
+                      ),
+                      IconButton(
                         icon: const Icon(Icons.map_outlined, color: Color(0xFF666666), size: 22),
                         onPressed: _openGeofenceMap,
                         tooltip: l.get('geofenceTitle'),
@@ -301,6 +319,15 @@ class _MainScreenState extends State<MainScreen>
                         // 危険度インジケーター（静的デモ）
                         _RiskCard(l10n: l),
 
+                        const SizedBox(height: 16),
+
+                        // 出没マップカード
+                        _SightingBannerCard(
+                          count: _sightings.all.where((s) => s.isThisMonth).length,
+                          l10n: l,
+                          onTap: _openSightingMap,
+                        ),
+
                         const Spacer(),
                       ],
                     ),
@@ -336,6 +363,45 @@ class _MainScreenState extends State<MainScreen>
     _geofence.dispose();
     _emergencyPressCtrl.dispose();
     super.dispose();
+  }
+}
+
+// ── 出没マップバナーカード ──
+class _SightingBannerCard extends StatelessWidget {
+  final int count;
+  final L10n l10n;
+  final VoidCallback onTap;
+  const _SightingBannerCard({required this.count, required this.l10n, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1A1200),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFF4A3000), width: 1.5),
+        ),
+        child: Row(children: [
+          const Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 28),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(l10n.get('sightingTitle'),
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
+              const SizedBox(height: 2),
+              Text(
+                '${l10n.get('sightingMonth')} $count${l10n.get('sightingCount')} — ${l10n.get('sightingNearby')}',
+                style: const TextStyle(color: Colors.orange, fontSize: 12),
+              ),
+            ]),
+          ),
+          const Icon(Icons.chevron_right, color: Color(0xFF666666)),
+        ]),
+      ),
+    );
   }
 }
 

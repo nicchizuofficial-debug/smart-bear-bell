@@ -1,0 +1,59 @@
+workflows:
+  ios-release:
+    name: iOS Release — くますず
+    max_build_duration: 60
+    integrations:
+      app_store_connect: Codemagic   # App Store Connect API Key の名前
+    environment:
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: jp.nicchizu.smartbearbell
+    scripts:
+      - name: Get Flutter packages
+        script: |
+          flutter packages pub get
+
+      - name: Install pods
+        script: |
+          find . -name "Podfile" -execdir pod install \;
+
+      - name: Set up code signing
+        script: |
+          xcode-project use-profiles
+
+      - name: Generate ExportOptions.plist
+        # 失敗5・8対策: $CM_EXPORT_OPTIONS_PATHに頼らずPythonで生成
+        script: |
+          python3 -c "
+          import plistlib
+          plist = {
+              'method': 'app-store',
+              'signingStyle': 'manual',
+              'provisioningProfiles': {
+                  'jp.nicchizu.smartbearbell': 'match AppStore jp.nicchizu.smartbearbell'
+              }
+          }
+          with open('/tmp/ExportOptions.plist', 'wb') as f:
+              plistlib.dump(plist, f)
+          "
+
+      - name: Flutter build ipa
+        script: |
+          flutter build ipa \
+            --release \
+            --export-options-plist=/tmp/ExportOptions.plist
+
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+      email:
+        recipients:
+          - mt166431@gmail.com

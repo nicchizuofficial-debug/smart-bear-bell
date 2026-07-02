@@ -1,6 +1,6 @@
-name: smart_bear_bell
-description: Smart Bear Bell — urban bear encounter prevention app
-version: 1.0.0+1
+﻿name: smart_bear_bell
+description: Smart Bear Bell 窶・urban bear encounter prevention app
+version: 1.0.0+2
 publish_to: 'none'
 
 environment:

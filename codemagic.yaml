@@ -11,6 +11,7 @@ workflows:
       ios_signing:
         distribution_type: app_store
         bundle_identifier: jp.nicchizu.smartbearbell
+        api_key: Codemagic
     scripts:
       - name: Get Flutter packages
         script: |
@@ -31,10 +32,7 @@ workflows:
           import plistlib
           plist = {
               'method': 'app-store',
-              'signingStyle': 'manual',
-              'provisioningProfiles': {
-                  'jp.nicchizu.smartbearbell': 'match AppStore jp.nicchizu.smartbearbell'
-              }
+              'signingStyle': 'automatic',
           }
           with open('/tmp/ExportOptions.plist', 'wb') as f:
               plistlib.dump(plist, f)

@@ -8,6 +8,11 @@ workflows:
       flutter: stable
       xcode: latest
       cocoapods: default
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: jp.nicchizu.smartbearbell
+        certificate_pattern: iOS Distribution
+        provisioning_profile_pattern: SmartBearBell AppStore
     scripts:
       - name: Get Flutter packages
         script: |
@@ -17,49 +22,15 @@ workflows:
         script: |
           find . -name "Podfile" -execdir pod install \;
 
-      - name: Check credentials
+      - name: Set up code signing
         script: |
-          echo "ISSUER_ID: ${APP_STORE_CONNECT_ISSUER_ID:-NOT_SET}"
-          echo "KEY_ID: ${APP_STORE_CONNECT_KEY_IDENTIFIER:-NOT_SET}"
-          echo "PRIVATE_KEY: $([ -n "$APP_STORE_CONNECT_PRIVATE_KEY" ] && echo SET || echo NOT_SET)"
-
-      - name: Set up signing
-        script: |
-          keychain initialize
-          echo "=== Fetching signing files ==="
-          app-store-connect fetch-signing-files jp.nicchizu.smartbearbell \
-            --type IOS_APP_STORE \
-            --create \
-            --verbose
-          echo "FETCH EXIT: $?"
-          echo "=== Certificates ==="
-          security find-identity -v -p codesigning || echo "none"
-          echo "=== Profiles ==="
-          ls ~/Library/MobileDevice/Provisioning\ Profiles/ 2>/dev/null || echo "empty"
-          keychain add-certificates
           xcode-project use-profiles
 
-      - name: Build ipa
+      - name: Flutter build ipa
         script: |
-          # Get profile name dynamically
-          PROFILE_UUID=$(ls ~/Library/MobileDevice/Provisioning\ Profiles/*.mobileprovision 2>/dev/null | head -1)
-          PROFILE_NAME=$(python3 -c "
-          import plistlib, subprocess, sys
-          data = subprocess.run(['security', 'cms', '-D', '-i', '$PROFILE_UUID'], capture_output=True).stdout
-          p = plistlib.loads(data)
-          print(p.get('Name',''))
-          " 2>/dev/null || echo "")
-          echo "Profile name: $PROFILE_NAME"
-
-          python3 -c "
-          import plistlib
-          plist = {'method': 'app-store'}
-          with open('/tmp/ExportOptions.plist', 'wb') as f:
-              plistlib.dump(plist, f)
-          "
           flutter build ipa \
             --release \
-            --export-options-plist=/tmp/ExportOptions.plist
+            --export-options-plist=$CM_EXPORT_OPTIONS_PATH
 
     artifacts:
       - build/ios/ipa/*.ipa

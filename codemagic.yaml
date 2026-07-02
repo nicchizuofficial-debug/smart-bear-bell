@@ -26,9 +26,21 @@ workflows:
 
       - name: Flutter build ipa
         script: |
+          python3 -c "
+          import plistlib
+          plist = {
+              'method': 'app-store',
+              'signingStyle': 'manual',
+              'provisioningProfiles': {
+                  'jp.nicchizu.smartbearbell': 'SmartBearBell AppStore'
+              }
+          }
+          with open('/tmp/ExportOptions.plist', 'wb') as f:
+              plistlib.dump(plist, f)
+          "
           flutter build ipa \
             --release \
-            --export-options-plist=$CM_EXPORT_OPTIONS_PATH
+            --export-options-plist=/tmp/ExportOptions.plist
 
     artifacts:
       - build/ios/ipa/*.ipa

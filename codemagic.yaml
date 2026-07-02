@@ -8,9 +8,6 @@ workflows:
       flutter: stable
       xcode: latest
       cocoapods: default
-      ios_signing:
-        distribution_type: app_store
-        bundle_identifier: jp.nicchizu.smartbearbell
     scripts:
       - name: Get Flutter packages
         script: |
@@ -20,7 +17,7 @@ workflows:
         script: |
           find . -name "Podfile" -execdir pod install \;
 
-      - name: Set up keychain
+      - name: Set up signing
         script: |
           keychain initialize
           app-store-connect fetch-signing-files jp.nicchizu.smartbearbell \
@@ -28,12 +25,30 @@ workflows:
             --create
           keychain add-certificates
           xcode-project use-profiles
+          echo "Profiles directory:"
+          ls ~/Library/MobileDevice/Provisioning\ Profiles/ || true
 
-      - name: Flutter build ipa
+      - name: Build ipa
         script: |
+          # Get profile name dynamically
+          PROFILE_UUID=$(ls ~/Library/MobileDevice/Provisioning\ Profiles/*.mobileprovision 2>/dev/null | head -1)
+          PROFILE_NAME=$(python3 -c "
+          import plistlib, subprocess, sys
+          data = subprocess.run(['security', 'cms', '-D', '-i', '$PROFILE_UUID'], capture_output=True).stdout
+          p = plistlib.loads(data)
+          print(p.get('Name',''))
+          " 2>/dev/null || echo "")
+          echo "Profile name: $PROFILE_NAME"
+
+          python3 -c "
+          import plistlib
+          plist = {'method': 'app-store'}
+          with open('/tmp/ExportOptions.plist', 'wb') as f:
+              plistlib.dump(plist, f)
+          "
           flutter build ipa \
             --release \
-            --export-options-plist=$CM_EXPORT_OPTIONS_PATH
+            --export-options-plist=/tmp/ExportOptions.plist
 
     artifacts:
       - build/ios/ipa/*.ipa

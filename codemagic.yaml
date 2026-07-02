@@ -20,13 +20,17 @@ workflows:
       - name: Set up signing
         script: |
           keychain initialize
+          echo "=== Fetching signing files ==="
           app-store-connect fetch-signing-files jp.nicchizu.smartbearbell \
             --type IOS_APP_STORE \
-            --create
+            --create \
+            --verbose || echo "FETCH EXIT CODE: $?"
+          echo "=== Certificates in keychain ==="
+          security find-identity -v -p codesigning || echo "none"
+          echo "=== Profiles directory ==="
+          ls ~/Library/MobileDevice/Provisioning\ Profiles/ 2>/dev/null || echo "empty"
           keychain add-certificates
-          xcode-project use-profiles
-          echo "Profiles directory:"
-          ls ~/Library/MobileDevice/Provisioning\ Profiles/ || true
+          xcode-project use-profiles || echo "use-profiles exit: $?"
 
       - name: Build ipa
         script: |

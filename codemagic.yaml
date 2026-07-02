@@ -11,8 +11,6 @@ workflows:
       ios_signing:
         distribution_type: app_store
         bundle_identifier: jp.nicchizu.smartbearbell
-        certificate_pattern: iOS Distribution
-        provisioning_profile_pattern: SmartBearBell AppStore
     scripts:
       - name: Get Flutter packages
         script: |

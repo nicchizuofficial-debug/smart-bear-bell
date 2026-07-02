@@ -49,26 +49,24 @@
 		</dict>
 		<key>UIApplicationSupportsIndirectInputEvents</key>
 		<true/>
-		<!-- ── バックグラウンド動作 ── -->
 		<key>UIBackgroundModes</key>
 		<array>
 			<string>audio</string>
 			<string>location</string>
 			<string>fetch</string>
 		</array>
-		<!-- ── 位置情報パーミッション ── -->
 		<key>NSLocationWhenInUseUsageDescription</key>
 		<string>クマ出没エリアの自動検知と緊急SOS位置情報送信のために現在地を使用します。</string>
 		<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 		<string>バックグラウンドでのジオフェンス自動監視に使用します。安全エリアに入ると自動でミュートします。</string>
 		<key>NSLocationAlwaysUsageDescription</key>
 		<string>バックグラウンドでのジオフェンス自動監視に使用します。</string>
-		<!-- ── カメラ（LEDフラッシュ） ── -->
 		<key>NSCameraUsageDescription</key>
 		<string>クマ威嚇のためカメラのLEDフラッシュをストロボ点滅させます。</string>
-		<!-- ── モーション（加速度センサー） ── -->
 		<key>NSMotionUsageDescription</key>
 		<string>歩行中か停止中かを検知してスマート鈴を自動ON/OFFするために使用します。</string>
+		<key>ITSAppUsesNonExemptEncryption</key>
+		<false/>
 		<key>UILaunchStoryboardName</key>
 		<string>LaunchScreen</string>
 		<key>UIMainStoryboardFile</key>

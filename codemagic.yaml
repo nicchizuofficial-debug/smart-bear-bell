@@ -8,9 +8,6 @@ workflows:
       flutter: stable
       xcode: latest
       cocoapods: default
-      ios_signing:
-        distribution_type: app_store
-        bundle_identifier: jp.nicchizu.smartbearbell
     scripts:
       - name: Get Flutter packages
         script: |
@@ -20,12 +17,9 @@ workflows:
         script: |
           find . -name "Podfile" -execdir pod install \;
 
-      - name: Set up keychain
+      - name: Set up keychain and signing
         script: |
           keychain initialize
-
-      - name: Fetch signing files
-        script: |
           app-store-connect fetch-signing-files jp.nicchizu.smartbearbell \
             --type IOS_APP_STORE \
             --create

@@ -20,8 +20,16 @@ workflows:
         script: |
           find . -name "Podfile" -execdir pod install \;
 
-      - name: Set up code signing
+      - name: Set up keychain
         script: |
+          keychain initialize
+
+      - name: Fetch signing files
+        script: |
+          app-store-connect fetch-signing-files jp.nicchizu.smartbearbell \
+            --type IOS_APP_STORE \
+            --create
+          keychain add-certificates
           xcode-project use-profiles
 
       - name: Flutter build ipa

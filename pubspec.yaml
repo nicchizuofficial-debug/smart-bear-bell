@@ -1,6 +1,6 @@
 ﻿name: smart_bear_bell
 description: Smart Bear Bell 窶・urban bear encounter prevention app
-version: 1.0.0+4
+version: 1.0.0+5
 publish_to: 'none'
 
 environment:
@@ -17,6 +17,7 @@ dependencies:
   latlong2: ^0.9.1
   geolocator: 13.0.2
   shared_preferences: ^2.3.3
+  torch_light: ^1.0.0
 
 dev_dependencies:
   flutter_test:
